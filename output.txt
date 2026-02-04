@@ -1,4 +1,0 @@
-
-> pomodoro-valentine-2026@1.0.0 electron
-> electron electron/main.js
-

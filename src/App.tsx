@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./App.css";
 
 // Import assets for Electron compatibility
@@ -38,6 +38,10 @@ function App() {
   const [isBreak, setIsBreak] = useState(false);
   const [isCelebrating, setIsCelebrating] = useState(false);
 
+  /* --- internal refs --- */
+  const celebrationTimeout = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
   /* --- messages --- */
   const cheerMessages = [
     "you can do it!",
@@ -73,26 +77,47 @@ function App() {
 
   /* --- countdown timer --- */
   useEffect(() => {
-    if (!isRunning || timeLeft <= 0) return;
-    const t = setInterval(() => setTimeLeft((p) => Math.max(0, p - 1)), 1000);
-    return () => clearInterval(t);
-  }, [isRunning, timeLeft]);
+    if (!isRunning) return;
+
+    intervalRef.current = setInterval(() => {
+      setTimeLeft((p) => Math.max(0, p - 1));
+    }, 1000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [isRunning]);
 
   /* --- celebration when timer finishes --- */
   useEffect(() => {
-    if (timeLeft === 0 && isRunning) {
-      setIsRunning(false);
-      setIsCelebrating(true);
+    if (timeLeft !== 0 || !isRunning) return;
 
-      const t = setTimeout(() => {
-        setIsCelebrating(false);
-        // Switch to the opposite mode after celebration
-        setIsBreak(!isBreak);
-        setTimeLeft(isBreak ? WORK_DURATION : BREAK_DURATION);
-      }, 3000);
+    setIsRunning(false);
+    setIsCelebrating(true);
 
-      return () => clearTimeout(t);
+    // clear any previous timeout
+    if (celebrationTimeout.current) {
+      clearTimeout(celebrationTimeout.current);
     }
+
+    const nextIsBreak = !isBreak;
+
+    celebrationTimeout.current = setTimeout(() => {
+      setIsCelebrating(false);
+      setIsBreak(nextIsBreak);
+      setTimeLeft(nextIsBreak ? BREAK_DURATION : WORK_DURATION);
+      celebrationTimeout.current = null;
+    }, 3000);
+
+    return () => {
+      if (celebrationTimeout.current) {
+        clearTimeout(celebrationTimeout.current);
+        celebrationTimeout.current = null;
+      }
+    };
   }, [timeLeft, isRunning, isBreak]);
 
   /* --- helpers --- */
@@ -105,13 +130,38 @@ function App() {
   const startStop = () => setIsRunning((p) => !p);
 
   const switchMode = (b: boolean) => {
-    setIsBreak(b);
     setIsRunning(false);
+    setIsCelebrating(false);
+
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    if (celebrationTimeout.current) {
+      clearTimeout(celebrationTimeout.current);
+      celebrationTimeout.current = null;
+    }
+
+    setIsBreak(b);
     setTimeLeft(b ? BREAK_DURATION : WORK_DURATION);
   };
-
   const handleReset = () => {
     setIsRunning(false);
+    setIsCelebrating(false);
+
+    // stop ticking immediately
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    // cancel celebration transition
+    if (celebrationTimeout.current) {
+      clearTimeout(celebrationTimeout.current);
+      celebrationTimeout.current = null;
+    }
+
     setTimeLeft(isBreak ? BREAK_DURATION : WORK_DURATION);
   };
 
