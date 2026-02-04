@@ -1,0 +1,385 @@
+@font-face {
+  font-family: "Retrograde-Regular";
+  src: url("./assets/Retrograde-Regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+* {
+  box-sizing: border-box;
+  image-rendering: pixelated;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Retrograde-Regular", sans-serif;
+  background: transparent;
+}
+
+/* === Root app container === */
+.app {
+  /* ...keep your existing sizing/layout stuff... */
+
+  background-color: #9fd3ff;
+
+  background-image:
+    /* ☁️ clouds (same idea as before) */
+    radial-gradient(circle at 20px 12px, #ffffff 12px, transparent 13px),
+    radial-gradient(circle at 40px 12px, #ffffff 16px, transparent 17px),
+    radial-gradient(circle at 60px 12px, #ffffff 12px, transparent 13px),
+
+    /* ☁️ cloud #2 */
+    radial-gradient(circle at 18px 12px, #ffffff 11px, transparent 12px),
+    radial-gradient(circle at 38px 12px, #ffffff 15px, transparent 16px),
+    radial-gradient(circle at 58px 12px, #ffffff 11px, transparent 12px),
+
+    /* 🌱 grass */
+    linear-gradient(#2f9a58 0 0),
+
+    /* 🌸 flower petals (row 1) */
+    radial-gradient(circle, #ff9ecf 6px, transparent 7px),
+    radial-gradient(circle, #ff9ecf 6px, transparent 7px),
+    radial-gradient(circle, #ff9ecf 6px, transparent 7px),
+    radial-gradient(circle, #ff9ecf 6px, transparent 7px),
+
+    /* 🌸 flower petals (row 2) */
+    radial-gradient(circle, #ff9ecf 6px, transparent 7px),
+    radial-gradient(circle, #ff9ecf 6px, transparent 7px),
+    radial-gradient(circle, #ff9ecf 6px, transparent 7px),
+    radial-gradient(circle, #ff9ecf 6px, transparent 7px),
+
+    /* 🌼 centers (row 1) */
+    radial-gradient(circle, #ffd966 3px, transparent 4px),
+    radial-gradient(circle, #ffd966 3px, transparent 4px),
+    radial-gradient(circle, #ffd966 3px, transparent 4px),
+    radial-gradient(circle, #ffd966 3px, transparent 4px),
+
+    /* 🌼 centers (row 2) */
+    radial-gradient(circle, #ffd966 3px, transparent 4px),
+    radial-gradient(circle, #ffd966 3px, transparent 4px),
+    radial-gradient(circle, #ffd966 3px, transparent 4px),
+    radial-gradient(circle, #ffd966 3px, transparent 4px);
+
+  background-size:
+    /* clouds */
+    90px 46px,
+    90px 46px,
+    90px 46px,
+
+    /* clouds #2 */
+    110px 56px,
+    110px 56px,
+    110px 56px,
+
+    /* grass */
+    100% 90px,
+
+    /* petals row 1 */
+    32px 32px,
+    32px 32px,
+    32px 32px,
+    32px 32px,
+
+    /* petals row 2 */
+    32px 32px,
+    32px 32px,
+    32px 32px,
+    32px 32px,
+
+    /* centers row 1 */
+    32px 32px,
+    32px 32px,
+    32px 32px,
+    32px 32px,
+
+    /* centers row 2 */
+    32px 32px,
+    32px 32px,
+    32px 32px,
+    32px 32px;
+
+  background-position:
+    /* clouds */
+    30px 35px,
+    240px 55px,
+    30px 35px,
+
+    /* clouds #2 */
+    190px 20px,
+    190px 20px,
+    190px 20px,
+
+    /* grass */
+    0 310px,
+
+    /* petals row 1 */
+    40px 334px,
+    120px 346px,
+    220px 332px,
+    320px 348px,
+
+    /* petals row 2 */
+    70px 368px,
+    160px 378px,
+    260px 366px,
+    350px 380px,
+
+    /* centers row 1 (same positions) */
+    40px 334px,
+    120px 346px,
+    220px 332px,
+    320px 348px,
+
+    /* centers row 2 (same positions) */
+    70px 368px,
+    160px 378px,
+    260px 366px,
+    350px 380px;
+
+  background-repeat: no-repeat;
+
+  /* keep your layout rules */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+/* === Cloud platform for animals === */
+.animal-stage {
+  position: relative;
+  width: 90%;
+  height: 120px;
+  margin: 16px auto;
+
+  /* Cloud base */
+  background-color: #ffffff;
+
+  /* Pixel cloud bumps */
+  background-image:
+    radial-gradient(#ffffff 16px, transparent 16px),
+    radial-gradient(#ffffff 18px, transparent 18px),
+    radial-gradient(#ffffff 14px, transparent 14px);
+
+  background-size:
+    40px 40px,
+    50px 50px,
+    36px 36px;
+
+  background-position:
+    40px 8px,
+    120px 0px,
+    200px 12px;
+
+  background-repeat: no-repeat;
+
+  border-radius: 24px;
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* === Title === */
+.app h1 {
+  margin-top: 16px;
+  font-size: 36px;
+  color: #ec651c; /* ORANGE */
+}
+
+/* === Timer === */
+.timer {
+  margin-top: 12px;
+  font-size: 48px;
+  color: #5b3816; /* BROWN */
+}
+
+/* === Controls === */
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+  margin-bottom: 12px;
+}
+
+.controls button {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background-color: #fde7d9;
+}
+
+/* === Debug text === */
+.debug {
+  font-size: 12px;
+  color: #ffffffaa;
+  margin-bottom: 8px;
+}
+
+/* === SKY COLORS (base) === */
+.app.work {
+  background-color: #9fd3ff;
+}
+
+.app.break {
+  background-color: #ffd6e7;
+}
+
+/* === Drifting cloud layers (real cloud blobs) === */
+.app.work,
+.app.break {
+  /* Keep grass separate, so clouds only affect the sky */
+  background-image:
+    /* cloud layer 1 */
+    radial-gradient(circle at 18px 18px, #ffffff 16px, transparent 17px),
+    radial-gradient(circle at 40px 14px, #ffffff 20px, transparent 21px),
+    radial-gradient(circle at 64px 18px, #ffffff 16px, transparent 17px),
+    radial-gradient(circle at 44px 28px, #ffffff 22px, transparent 23px),
+
+    /* cloud layer 2 */
+    radial-gradient(circle at 14px 16px, #ffffff 12px, transparent 13px),
+    radial-gradient(circle at 34px 12px, #ffffff 16px, transparent 17px),
+    radial-gradient(circle at 54px 16px, #ffffff 12px, transparent 13px),
+    radial-gradient(circle at 34px 24px, #ffffff 18px, transparent 19px),
+
+    /* grass */
+    linear-gradient(#41dc81 0 0);
+
+  background-size:
+    /* layer 1 blob footprint */
+    120px 60px,
+    120px 60px,
+    120px 60px,
+    120px 60px,
+
+    /* layer 2 blob footprint */
+    90px 46px,
+    90px 46px,
+    90px 46px,
+    90px 46px,
+
+    /* grass */
+    100% 90px;
+
+  /* starting positions */
+  background-position:
+    30px 55px,
+    30px 55px,
+    30px 55px,
+    30px 55px,
+
+    220px 25px,
+    220px 25px,
+    220px 25px,
+    220px 25px,
+
+    0 310px;
+
+  background-repeat: no-repeat;
+  animation: sky-cloud-drift 45s linear infinite;
+}
+
+/* drift clouds only; grass stays pinned */
+@keyframes sky-cloud-drift {
+  from {
+    background-position:
+      30px 55px,
+      30px 55px,
+      30px 55px,
+      30px 55px,
+
+      220px 25px,
+      220px 25px,
+      220px 25px,
+      220px 25px,
+
+      0 310px;
+  }
+  to {
+    background-position:
+      430px 55px,
+      430px 55px,
+      430px 55px,
+      430px 55px,
+
+      -120px 25px,
+      -120px 25px,
+      -120px 25px,
+      -120px 25px,
+
+      0 310px;
+  }
+}
+
+/* === Animal stage (white panel) === */
+.animal-stage {
+  position: relative;
+  width: 90%;
+  height: 120px;
+  margin: 16px auto;
+  background-color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.message {
+  position: absolute;
+  top: 10px;              /* pushes it down from top edge */
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+
+/* === Animals === */
+.animal {
+  position: absolute;
+  bottom: 8px;
+  width: 72px;
+  transition: transform 0.4s linear;
+}
+
+.animal.fox {
+  left: 16px;
+}
+
+/* make the sloth match fox visual size */
+.animal.sloth {
+  right: 16px;
+  transform-origin: bottom right;
+  scale: 0.65;
+}
+
+
+/* ---------- Flowers ---------- */
+.flower {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #ff9ecf;
+}
+
+.flower::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  background: #ffd966;
+}
+
+
+/* === Celebration === */
+.celebration {
+  font-size: 48px;
+}
