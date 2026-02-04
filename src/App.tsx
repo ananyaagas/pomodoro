@@ -1,6 +1,32 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
 
+// Import assets for Electron compatibility
+import foxWalk from "./assets/fox_walk.gif";
+import slothRoll from "./assets/sloth_roll.gif";
+import confettiFalling from "./assets/confetti_falling.gif";
+import workIcon from "./assets/work.png";
+import workClickedIcon from "./assets/work-clicked.png";
+import breakIcon from "./assets/break.png";
+import breakClickedIcon from "./assets/break-clicked.png";
+import closeIcon from "./assets/close.png";
+import minimizeIcon from "./assets/minimize.png";
+import resetIcon from "./assets/reset.png";
+import flower1 from "./assets/flower-1.png";
+import flower2 from "./assets/flower-2.png";
+import flowersAnimated from "./assets/flowers-animated.gif";
+import roseAnimate from "./assets/rose-animate.gif";
+
+// Declare electron if it exists
+declare global {
+  interface Window {
+    electron?: {
+      minimize: () => void;
+      close: () => void;
+    };
+  }
+}
+
 function App() {
   /* --- constants --- */
   const WORK_DURATION = 25 * 60;
@@ -12,7 +38,7 @@ function App() {
   const [isBreak, setIsBreak] = useState(false);
   const [isCelebrating, setIsCelebrating] = useState(false);
 
-  /* --- messages (UNCHANGED) --- */
+  /* --- messages --- */
   const cheerMessages = [
     "you can do it!",
     "i believe in you!",
@@ -29,31 +55,30 @@ function App() {
     "stretch! shake some ass :P",
   ];
 
-  /* --- message state --- */
-  const [messageIndex, setMessageIndex] = useState(0);
-
-  /* --- derived --- */
+  /* --- derived values --- */
   const totalTime = isBreak ? BREAK_DURATION : WORK_DURATION;
-  const progress = isRunning ? 1 - timeLeft / totalTime : 0;
+  const progress = 1 - timeLeft / totalTime;
   const messages = isBreak ? breakMessages : cheerMessages;
 
-  const meetProgress = () => {
-    const start = 1 - timeLeft / totalTime;
-    if (progress < start) return 0;
-    return (progress - start) / (1 - start);
-  };
+  // Calculate which message to show based on progress (5 messages = 20% each)
+  const messageIndex = Math.min(
+    Math.floor(progress * messages.length),
+    messages.length - 1
+  );
 
-  const meet = meetProgress();
+  // Animal movement: they should meet in the center
+  // Distance to travel for each animal
   const MEET_DISTANCE = 110;
+  const animalProgress = isCelebrating ? 1 : progress;
 
-  /* --- countdown --- */
+  /* --- countdown timer --- */
   useEffect(() => {
     if (!isRunning || timeLeft <= 0) return;
-    const t = setInterval(() => setTimeLeft((p) => p - 1), 1000);
+    const t = setInterval(() => setTimeLeft((p) => Math.max(0, p - 1)), 1000);
     return () => clearInterval(t);
   }, [isRunning, timeLeft]);
 
-  /* --- finish --- */
+  /* --- celebration when timer finishes --- */
   useEffect(() => {
     if (timeLeft === 0 && isRunning) {
       setIsRunning(false);
@@ -61,25 +86,14 @@ function App() {
 
       const t = setTimeout(() => {
         setIsCelebrating(false);
-        setTimeLeft(isBreak ? BREAK_DURATION : WORK_DURATION);
+        // Switch to the opposite mode after celebration
+        setIsBreak(!isBreak);
+        setTimeLeft(isBreak ? WORK_DURATION : BREAK_DURATION);
       }, 3000);
 
       return () => clearTimeout(t);
     }
   }, [timeLeft, isRunning, isBreak]);
-
-  /* --- message rotation --- */
-  useEffect(() => {
-    if (!isRunning) return;
-
-    const interval = isBreak ? 60_000 : 300_000;
-
-    const t = setInterval(() => {
-      setMessageIndex((i) => (i + 1) % messages.length);
-    }, interval);
-
-    return () => clearInterval(t);
-  }, [isRunning, isBreak, messages.length]);
 
   /* --- helpers --- */
   const formatTime = (s: number) =>
@@ -94,107 +108,113 @@ function App() {
     setIsBreak(b);
     setIsRunning(false);
     setTimeLeft(b ? BREAK_DURATION : WORK_DURATION);
-    setMessageIndex(0);
   };
-  {
-    /* === TOP BAR === */
-  }
-  <div className="topbar">
-    <img
-      className="mode-title"
-      src={
-        isBreak
-          ? isRunning
-            ? "/assets/break-clicked.png"
-            : "/assets/break.png"
-          : isRunning
-          ? "/assets/work-clicked.png"
-          : "/assets/work.png"
-      }
-      alt={isBreak ? "Break" : "Work"}
-    />
 
-    <div className="window-controls">
-      <img src="/assets/minimize.png" alt="Minimize" />
-      <img
-        src="/assets/reset.png"
-        alt="Reset"
-        onClick={() => switchMode(isBreak)}
-      />
-      <img src="./assets/close.png" alt="Close" />
-    </div>
-  </div>;
+  const handleReset = () => {
+    setIsRunning(false);
+    setTimeLeft(isBreak ? BREAK_DURATION : WORK_DURATION);
+  };
+
+  const handleMinimize = () => {
+    if (window.electron) {
+      window.electron.minimize();
+    }
+  };
+
+  const handleClose = () => {
+    if (window.electron) {
+      window.electron.close();
+    }
+  };
+
+  // Get the correct mode icon
+  const getModeIcon = () => {
+    if (isBreak) {
+      return isRunning ? breakClickedIcon : breakIcon;
+    } else {
+      return isRunning ? workClickedIcon : workIcon;
+    }
+  };
 
   return (
     <div className={`app ${isBreak ? "break" : "work"}`}>
-      {/* === NEW: CLOUD LAYER (responsive + drifting) === */}
+      {/* === TOP BAR === */}
+      <div className="topbar">
+        <div className="window-controls left">
+          <img src={closeIcon} alt="Close" onClick={handleClose} />
+          <img src={minimizeIcon} alt="Minimize" onClick={handleMinimize} />
+        </div>
+
+        <img
+          className="topbar-mode-icon"
+          src={getModeIcon()}
+          alt={isBreak ? "Break" : "Work"}
+        />
+
+        <div className="window-controls right">
+          <img src={resetIcon} alt="Reset" onClick={handleReset} />
+        </div>
+      </div>
+
+      {/* === CLOUD LAYER === */}
       <div className="cloud-layer">
         <div className="cloud cloud-1" />
         <div className="cloud cloud-2" />
         <div className="cloud cloud-3" />
       </div>
 
+      {/* === MODE TITLE === */}
       <img
         className="mode-title"
-        src={
-          isBreak
-            ? isRunning
-              ? "/assets/break-clicked.png"
-              : "/assets/break.png"
-            : isRunning
-            ? "/assets/work-clicked.png"
-            : "/assets/work.png"
-        }
+        src={getModeIcon()}
         alt={isBreak ? "Break" : "Work"}
       />
+
+      {/* === TIMER === */}
       <div className="timer">{formatTime(timeLeft)}</div>
 
-      {/* === CLOUD STAGE (UNCHANGED LOGIC) === */}
+      {/* === ANIMAL STAGE === */}
       <div className="animal-stage">
         <div className="message">{messages[messageIndex]}</div>
 
         <img
-          src={`${process.env.PUBLIC_URL}/fox_walk.gif`}
+          src={foxWalk}
           alt="Fox"
           className="animal fox"
-          style={{ transform: `translateX(${meet * MEET_DISTANCE}px)` }}
+          style={{
+            transform: `translateX(${animalProgress * MEET_DISTANCE}px)`,
+          }}
         />
 
         <img
-          src={`${process.env.PUBLIC_URL}/sloth_roll.gif`}
+          src={slothRoll}
           alt="Sloth"
           className="animal sloth"
-          style={{ transform: `translateX(${-meet * MEET_DISTANCE}px)` }}
+          style={{
+            transform: `translateX(${-animalProgress * MEET_DISTANCE}px)`,
+          }}
         />
 
         {isCelebrating && (
           <div className="confetti">
-            {Array.from({ length: 40 }).map((_, i) => (
-              <span
-                key={i}
-                style={{
-                  ["--x" as any]: Math.random(),
-                  ["--hue" as any]: Math.random() * 360,
-                }}
-              />
-            ))}
+            <img src={confettiFalling} alt="Celebration!" />
           </div>
         )}
       </div>
 
-      {/* === NEW: GRASS + FLOWERS === */}
+      {/* === GRASS + FLOWERS === */}
       <div className="grass">
-        <img src="./assets/flower-1.png" className="flower f1" alt="" />
-        <img src="./assets/flower-2.png" className="flower f2" alt="" />
-        <img src="./assets/flowers-animated.gif" className="flower f3" alt="" />
-        <img src="./assets/rose-animate.gif" className="flower f4" alt="" />
+        <img src={flower1} className="flower f1" alt="" />
+        <img src={flower2} className="flower f2" alt="" />
+        <img src={flowersAnimated} className="flower f3" alt="" />
+        <img src={roseAnimate} className="flower f4" alt="" />
       </div>
 
       {/* === CONTROLS === */}
       <div className="controls">
-        <button onClick={() => switchMode(false)}>Work</button>
-        <button onClick={() => switchMode(true)}>Break</button>
-        <button onClick={startStop}>{isRunning ? "Pause" : "Start"}</button>
+        <button onClick={() => switchMode(false)}>WORK</button>
+        <button onClick={() => switchMode(true)}>BREAK</button>
+        <button onClick={startStop}>{isRunning ? "PAUSE" : "START"}</button>
       </div>
 
       {/* === PROGRESS BAR === */}
