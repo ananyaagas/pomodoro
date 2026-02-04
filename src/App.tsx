@@ -38,7 +38,7 @@ function App() {
   const messages = isBreak ? breakMessages : cheerMessages;
 
   const meetProgress = () => {
-    const start = 0.9;
+    const start = 1 - timeLeft / totalTime;
     if (progress < start) return 0;
     return (progress - start) / (1 - start);
   };
@@ -96,6 +96,34 @@ function App() {
     setTimeLeft(b ? BREAK_DURATION : WORK_DURATION);
     setMessageIndex(0);
   };
+  {
+    /* === TOP BAR === */
+  }
+  <div className="topbar">
+    <img
+      className="mode-title"
+      src={
+        isBreak
+          ? isRunning
+            ? "/assets/break-clicked.png"
+            : "/assets/break.png"
+          : isRunning
+          ? "/assets/work-clicked.png"
+          : "/assets/work.png"
+      }
+      alt={isBreak ? "Break" : "Work"}
+    />
+
+    <div className="window-controls">
+      <img src="/assets/minimize.png" alt="Minimize" />
+      <img
+        src="/assets/reset.png"
+        alt="Reset"
+        onClick={() => switchMode(isBreak)}
+      />
+      <img src="./assets/close.png" alt="Close" />
+    </div>
+  </div>;
 
   return (
     <div className={`app ${isBreak ? "break" : "work"}`}>
@@ -106,7 +134,19 @@ function App() {
         <div className="cloud cloud-3" />
       </div>
 
-      <h1>{isBreak ? "Break" : "Work"}</h1>
+      <img
+        className="mode-title"
+        src={
+          isBreak
+            ? isRunning
+              ? "/assets/break-clicked.png"
+              : "/assets/break.png"
+            : isRunning
+            ? "/assets/work-clicked.png"
+            : "/assets/work.png"
+        }
+        alt={isBreak ? "Break" : "Work"}
+      />
       <div className="timer">{formatTime(timeLeft)}</div>
 
       {/* === CLOUD STAGE (UNCHANGED LOGIC) === */}
@@ -144,19 +184,26 @@ function App() {
 
       {/* === NEW: GRASS + FLOWERS === */}
       <div className="grass">
-        <img src="/flower-1.png" className="flower f1" alt="" />
-        <img src="/flower-2.png" className="flower f2" alt="" />
-        <img src="/flowers-animated.gif" className="flower f3" alt="" />
-        <img src="/rose-animate.gif" className="flower f4" alt="" />
+        <img src="./assets/flower-1.png" className="flower f1" alt="" />
+        <img src="./assets/flower-2.png" className="flower f2" alt="" />
+        <img src="./assets/flowers-animated.gif" className="flower f3" alt="" />
+        <img src="./assets/rose-animate.gif" className="flower f4" alt="" />
       </div>
 
+      {/* === CONTROLS === */}
       <div className="controls">
         <button onClick={() => switchMode(false)}>Work</button>
         <button onClick={() => switchMode(true)}>Break</button>
         <button onClick={startStop}>{isRunning ? "Pause" : "Start"}</button>
       </div>
 
-      <div className="debug">Progress: {progress.toFixed(2)}</div>
+      {/* === PROGRESS BAR === */}
+      <div className="progress-bar">
+        <div
+          className="progress-fill"
+          style={{ width: `${progress * 100}%` }}
+        />
+      </div>
     </div>
   );
 }
