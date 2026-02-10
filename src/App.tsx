@@ -146,6 +146,7 @@ function App() {
     setIsBreak(b);
     setTimeLeft(b ? BREAK_DURATION : WORK_DURATION);
   };
+
   const handleReset = () => {
     setIsRunning(false);
     setIsCelebrating(false);
