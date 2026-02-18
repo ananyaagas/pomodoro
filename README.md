@@ -389,10 +389,6 @@ Behind the scenes, this also helps performance. Transform-based animations avoid
 
 ---
 
-Here’s a **cute-but-still-smart rewrite** that keeps all the technical meat, preserves your code blocks, and makes the explanations feel friendlier and more conversational. This should slot right in after the design section without feeling like a tone shift.
-
----
-
 ## 🧵 How the App Talks to Itself (IPC)
 
 Because this is an Electron app, it lives in two worlds at once.
