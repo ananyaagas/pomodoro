@@ -41,6 +41,9 @@ function App() {
   /* --- internal refs --- */
   const celebrationTimeout = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Wall-clock refs: track actual elapsed time to avoid drift / throttling
+  const startTimeRef = useRef<number | null>(null); // Date.now() when run began
+  const elapsedRef = useRef<number>(0); // ms accumulated before current run
 
   /* --- messages --- */
   const cheerMessages = [
@@ -75,13 +78,22 @@ function App() {
   const MEET_DISTANCE = 110;
   const animalProgress = isCelebrating ? 1 : progress;
 
-  /* --- countdown timer --- */
+  /* --- countdown timer (wall-clock based) --- */
   useEffect(() => {
     if (!isRunning) return;
 
+    // Record the moment this run segment started
+    startTimeRef.current = Date.now();
+    const duration = isBreak ? BREAK_DURATION : WORK_DURATION;
+
     intervalRef.current = setInterval(() => {
-      setTimeLeft((p) => Math.max(0, p - 1));
-    }, 1000);
+      const now = Date.now();
+      const totalElapsedMs =
+        elapsedRef.current + (now - (startTimeRef.current ?? now));
+      const totalElapsedSec = Math.floor(totalElapsedMs / 1000);
+      const remaining = Math.max(0, duration - totalElapsedSec);
+      setTimeLeft(remaining);
+    }, 250); // poll faster for snappier display
 
     return () => {
       if (intervalRef.current) {
@@ -89,11 +101,17 @@ function App() {
         intervalRef.current = null;
       }
     };
-  }, [isRunning]);
+  }, [isRunning, isBreak]);
 
   /* --- celebration when timer finishes --- */
   useEffect(() => {
     if (timeLeft !== 0 || !isRunning) return;
+
+    // Freeze elapsed tracking
+    if (startTimeRef.current !== null) {
+      elapsedRef.current += Date.now() - startTimeRef.current;
+      startTimeRef.current = null;
+    }
 
     setIsRunning(false);
     setIsCelebrating(true);
@@ -109,6 +127,9 @@ function App() {
       setIsCelebrating(false);
       setIsBreak(nextIsBreak);
       setTimeLeft(nextIsBreak ? BREAK_DURATION : WORK_DURATION);
+      // Reset wall-clock tracking for the next session
+      elapsedRef.current = 0;
+      startTimeRef.current = null;
       celebrationTimeout.current = null;
     }, 3000);
 
@@ -127,7 +148,19 @@ function App() {
       .padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
   /* --- handlers --- */
-  const startStop = () => setIsRunning((p) => !p);
+  const startStop = () => {
+    if (isRunning) {
+      // Pausing: accumulate the elapsed time from this run segment
+      if (startTimeRef.current !== null) {
+        elapsedRef.current += Date.now() - startTimeRef.current;
+        startTimeRef.current = null;
+      }
+      setIsRunning(false);
+    } else {
+      // Resuming: startTimeRef will be set in the useEffect
+      setIsRunning(true);
+    }
+  };
 
   const switchMode = (b: boolean) => {
     setIsRunning(false);
@@ -142,6 +175,10 @@ function App() {
       clearTimeout(celebrationTimeout.current);
       celebrationTimeout.current = null;
     }
+
+    // Reset wall-clock tracking
+    startTimeRef.current = null;
+    elapsedRef.current = 0;
 
     setIsBreak(b);
     setTimeLeft(b ? BREAK_DURATION : WORK_DURATION);
@@ -162,6 +199,10 @@ function App() {
       clearTimeout(celebrationTimeout.current);
       celebrationTimeout.current = null;
     }
+
+    // Reset wall-clock tracking
+    startTimeRef.current = null;
+    elapsedRef.current = 0;
 
     setTimeLeft(isBreak ? BREAK_DURATION : WORK_DURATION);
   };
